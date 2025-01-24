@@ -80,22 +80,39 @@ def main():
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
         # Filter and display relevant sector P/E ratio
-        if sector_pe_data and profile:
+        if sector_pe_data and profile and ratios:
             sector_name = profile[0].get('sector', 'N/A')
             relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
+            stock_pe_ratio = round(ratios[0]['priceEarningsRatio'], 2)
             st.subheader("Sector P/E Ratio")
             if relevant_sector:
-                st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
+                sector_pe = round(float(relevant_sector['pe']), 2)
+                st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {sector_pe}")
+                # Add interpretation
+                if stock_pe_ratio > sector_pe:
+                    st.write("The stock's P/E ratio is higher than the sector average, suggesting it may be overvalued relative to its peers.")
+                elif stock_pe_ratio < sector_pe:
+                    st.write("The stock's P/E ratio is lower than the sector average, suggesting it may be undervalued relative to its peers.")
+                else:
+                    st.write("The stock's P/E ratio is in line with the sector average.")
             else:
                 st.write("No P/E ratio data available for the sector.")
 
-        # Display relevant industry P/E ratio
-        if industry_pe_data and profile:
+        # Display relevant industry P/E ratio with interpretation
+        if industry_pe_data and profile and ratios:
             industry_name = profile[0].get('industry', 'N/A')
             industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
             st.subheader("Industry P/E Ratio")
             if industry_pe_ratio:
-                st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {round(float(industry_pe_ratio), 2)}")
+                industry_pe = round(float(industry_pe_ratio), 2)
+                st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {industry_pe}")
+                # Add interpretation
+                if stock_pe_ratio > industry_pe:
+                    st.write("The stock's P/E ratio is higher than the industry average, suggesting it may be overvalued relative to its peers.")
+                elif stock_pe_ratio < industry_pe:
+                    st.write("The stock's P/E ratio is lower than the industry average, suggesting it may be undervalued relative to its peers.")
+                else:
+                    st.write("The stock's P/E ratio is in line with the industry average.")
             else:
                 st.write("No P/E ratio data available for the industry.")
 
