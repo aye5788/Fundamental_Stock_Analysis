@@ -52,20 +52,10 @@ def main():
         ratios = fetch_fmp_data("ratios", ticker, api_key)
 
         # Fetch sector and industry P/E ratios
-today = date.today().strftime("%Y-%m-%d")
-exchange = "NYSE"  # Default exchange
-sector_pe_data = fetch_sector_pe(today, exchange, api_key)
-industry_pe_data = fetch_industry_pe(today, exchange, api_key)
-
-if sector_pe_data and profile:
-    sector_name = profile[0].get('sector', 'N/A')
-    relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
-    st.subheader("Sector P/E Ratio")
-    if relevant_sector:
-        st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
-    else:
-        st.write("No P/E ratio data available for the sector.")
-
+        today = date.today().strftime("%Y-%m-%d")
+        exchange = "NYSE"  # Default exchange
+        sector_pe_data = fetch_sector_pe(today, exchange, api_key)
+        industry_pe_data = fetch_industry_pe(today, exchange, api_key)
 
         if dcf or ratios:
             st.subheader("Valuation and Key Ratios")
@@ -74,8 +64,8 @@ if sector_pe_data and profile:
             with col1:
                 if dcf:
                     st.write("### Discounted Cash Flow (DCF) Valuation")
-                    st.write(f"**DCF Value:** ${dcf[0]['dcf']}")
-                    st.write(f"**Stock Price:** ${dcf[0]['Stock Price']}")
+                    st.write(f"**DCF Value:** ${round(dcf[0]['dcf'], 2)}")
+                    st.write(f"**Stock Price:** ${round(dcf[0]['Stock Price'], 2)}")
                     valuation = "undervalued" if dcf[0]['dcf'] > dcf[0]['Stock Price'] else "overvalued"
                     st.write(f"The stock appears to be **{valuation}** based on DCF analysis.")
 
@@ -89,26 +79,25 @@ if sector_pe_data and profile:
                     st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
-       # Filter and display relevant sector P/E ratio
-if sector_pe_data and profile:
-    sector_name = profile[0].get('sector', 'N/A')
-    relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
-    st.subheader("Sector P/E Ratio")
-    if relevant_sector:
-        st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
-    else:
-        st.write("No P/E ratio data available for the sector.")
+        # Filter and display relevant sector P/E ratio
+        if sector_pe_data and profile:
+            sector_name = profile[0].get('sector', 'N/A')
+            relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
+            st.subheader("Sector P/E Ratio")
+            if relevant_sector:
+                st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
+            else:
+                st.write("No P/E ratio data available for the sector.")
 
-
-      # Display relevant industry P/E ratio
-if industry_pe_data and profile:
-    industry_name = profile[0].get('industry', 'N/A')
-    industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
-    st.subheader("Industry P/E Ratio")
-    if industry_pe_ratio:
-        st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {round(float(industry_pe_ratio), 2)}")
-    else:
-        st.write("No P/E ratio data available for the industry.")
+        # Display relevant industry P/E ratio
+        if industry_pe_data and profile:
+            industry_name = profile[0].get('industry', 'N/A')
+            industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
+            st.subheader("Industry P/E Ratio")
+            if industry_pe_ratio:
+                st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {round(float(industry_pe_ratio), 2)}")
+            else:
+                st.write("No P/E ratio data available for the industry.")
 
 
 if __name__ == "__main__":
