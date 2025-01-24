@@ -52,10 +52,20 @@ def main():
         ratios = fetch_fmp_data("ratios", ticker, api_key)
 
         # Fetch sector and industry P/E ratios
-        today = date.today().strftime("%Y-%m-%d")
-        exchange = "NYSE"  # Default exchange
-        sector_pe_data = fetch_sector_pe(today, exchange, api_key)
-        industry_pe_data = fetch_industry_pe(today, exchange, api_key)
+today = date.today().strftime("%Y-%m-%d")
+exchange = "NYSE"  # Default exchange
+sector_pe_data = fetch_sector_pe(today, exchange, api_key)
+industry_pe_data = fetch_industry_pe(today, exchange, api_key)
+
+if sector_pe_data and profile:
+    sector_name = profile[0].get('sector', 'N/A')
+    relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
+    st.subheader("Sector P/E Ratio")
+    if relevant_sector:
+        st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
+    else:
+        st.write("No P/E ratio data available for the sector.")
+
 
         if dcf or ratios:
             st.subheader("Valuation and Key Ratios")
