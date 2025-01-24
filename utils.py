@@ -39,7 +39,6 @@ def fetch_stock_data(ticker, api_key, days):
         return response.json()
     return None
 
-# Fetch sector P/E ratios
 def fetch_sector_pe(date, exchange, api_key):
     """
     Fetch sector P/E ratios from the Financial Modeling Prep API.
@@ -50,13 +49,14 @@ def fetch_sector_pe(date, exchange, api_key):
         api_key (str): Financial Modeling Prep API key.
 
     Returns:
-        dict or None: JSON response if successful, None otherwise.
+        list or None: JSON response if successful, None otherwise.
     """
     url = f"https://financialmodelingprep.com/api/v4/sector_price_earning_ratio?date={date}&exchange={exchange}&apikey={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
-        return response.json()
+        return response.json()  # Return a list of sector P/E data
     return None
+
 
 # Fetch industry P/E ratios
 def fetch_industry_pe(date, exchange, api_key):
