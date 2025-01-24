@@ -16,7 +16,7 @@ def main():
     ticker = st.text_input("Enter Stock Ticker (e.g., AAPL):").upper()
 
     if ticker:
-        api_key = "YOUR_FMP_API_KEY"  # Replace with your actual FMP API key
+        api_key = "j6kCIBjZa1pHewFjf7XaRDlslDxEFuof"  # Replace with your actual FMP API key
 
         # Allow user to select timeframe
         timeframe = st.selectbox("Select Timeframe", ["Last 7 Days", "Last 30 Days", "Last 90 Days"])
