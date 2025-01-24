@@ -27,17 +27,19 @@ def main():
         elif timeframe == "Last 90 Days":
             stock_data = fetch_stock_data(ticker, api_key, days=90)
 
-        # Display candlestick chart at full width
-        if stock_data:
-            st.plotly_chart(plot_candlestick_chart(stock_data, timeframe), use_container_width=True)
-
         # Fetch company profile
         profile = fetch_fmp_data("profile", ticker, api_key)
 
-        if profile:
-            col1, col2 = st.columns([1, 2])
+        # Side-by-side layout for chart and description
+        col1, col2 = st.columns([2, 1])  # Adjust the ratio for better alignment
 
-            with col1:
+        with col1:
+            # Display candlestick chart
+            if stock_data:
+                st.plotly_chart(plot_candlestick_chart(stock_data, timeframe), use_container_width=True)
+
+        with col2:
+            if profile:
                 # Display company description
                 st.subheader(f"{profile[0]['companyName']} ({ticker})")
                 st.write(f"**Industry:** {profile[0]['industry']}")
