@@ -79,25 +79,26 @@ def main():
                     st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
-        # Filter and display relevant sector P/E ratio
-        if sector_pe_data and profile:
-            sector_name = profile[0].get('sector', 'N/A')
-            relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
-            st.subheader("Sector P/E Ratio")
-            if relevant_sector:
-                st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {relevant_sector['pe']}")
-            else:
-                st.write("No P/E ratio data available for the sector.")
+       # Filter and display relevant sector P/E ratio
+if sector_pe_data and profile:
+    sector_name = profile[0].get('sector', 'N/A')
+    relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
+    st.subheader("Sector P/E Ratio")
+    if relevant_sector:
+        st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {round(float(relevant_sector['pe']), 2)}")
+    else:
+        st.write("No P/E ratio data available for the sector.")
 
-        # Display relevant industry P/E ratio
-        if industry_pe_data and profile:
-            industry_name = profile[0].get('industry', 'N/A')
-            industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
-            st.subheader("Industry P/E Ratio")
-            if industry_pe_ratio:
-                st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {industry_pe_ratio}")
-            else:
-                st.write("No P/E ratio data available for the industry.")
+
+      # Display relevant industry P/E ratio
+if industry_pe_data and profile:
+    industry_name = profile[0].get('industry', 'N/A')
+    industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
+    st.subheader("Industry P/E Ratio")
+    if industry_pe_ratio:
+        st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {round(float(industry_pe_ratio), 2)}")
+    else:
+        st.write("No P/E ratio data available for the industry.")
 
 
 if __name__ == "__main__":
