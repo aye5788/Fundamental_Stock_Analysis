@@ -79,13 +79,17 @@ def main():
                     st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
-        # Display sector P/E ratios
-        if sector_pe_data:
-            st.subheader("Sector P/E Ratios")
-            for sector in sector_pe_data:
-                st.write(f"**Sector:** {sector['sector']}, **P/E Ratio:** {sector['pe']}")
+        # Filter and display relevant sector P/E ratio
+        if sector_pe_data and profile:
+            sector_name = profile[0].get('sector', 'N/A')
+            relevant_sector = next((item for item in sector_pe_data if item['sector'] == sector_name), None)
+            st.subheader("Sector P/E Ratio")
+            if relevant_sector:
+                st.write(f"**Sector:** {relevant_sector['sector']}, **P/E Ratio:** {relevant_sector['pe']}")
+            else:
+                st.write("No P/E ratio data available for the sector.")
 
-        # Display industry P/E ratio
+        # Display relevant industry P/E ratio
         if industry_pe_data and profile:
             industry_name = profile[0].get('industry', 'N/A')
             industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
@@ -98,3 +102,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
