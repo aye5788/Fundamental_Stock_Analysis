@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import fetch_fmp_data, fetch_stock_data, plot_stock_chart
+from utils import fetch_fmp_data, fetch_stock_data, plot_candlestick_chart
 
 # Streamlit app
 def main():
@@ -13,15 +13,24 @@ def main():
 
         # Fetch company profile
         profile = fetch_fmp_data("profile", ticker, api_key)
-        stock_data = fetch_stock_data(ticker, api_key)
+        stock_data = None
+
+        # Allow user to select timeframe
+        timeframe = st.selectbox("Select Timeframe", ["Last 7 Days", "Last 30 Days", "Last 90 Days"])
+        if timeframe == "Last 7 Days":
+            stock_data = fetch_stock_data(ticker, api_key, days=7)
+        elif timeframe == "Last 30 Days":
+            stock_data = fetch_stock_data(ticker, api_key, days=30)
+        elif timeframe == "Last 90 Days":
+            stock_data = fetch_stock_data(ticker, api_key, days=90)
 
         if profile:
             col1, col2 = st.columns([1, 2])
 
             with col1:
-                # Display stock chart
+                # Display candlestick chart
                 if stock_data:
-                    st.plotly_chart(plot_stock_chart(stock_data))
+                    st.plotly_chart(plot_candlestick_chart(stock_data, timeframe))
 
             with col2:
                 # Display company description
@@ -30,26 +39,31 @@ def main():
                 st.write(f"**Sector:** {profile[0]['sector']}")
                 st.write(profile[0]['description'][:500] + "...")  # Limit description length
 
-        # Fetch DCF valuation
+        # Fetch DCF valuation and financial ratios
         dcf = fetch_fmp_data("discounted-cash-flow", ticker, api_key)
-        if dcf:
-            st.subheader("Discounted Cash Flow (DCF) Valuation")
-            st.write(f"**DCF Value:** ${dcf[0]['dcf']}")
-            st.write(f"**Stock Price:** ${dcf[0]['Stock Price']}")
-            valuation = "undervalued" if dcf[0]['dcf'] > dcf[0]['Stock Price'] else "overvalued"
-            st.write(f"The stock appears to be **{valuation}** based on DCF analysis.")
-
-        # Fetch financial ratios
         ratios = fetch_fmp_data("ratios", ticker, api_key)
-        if ratios:
-            st.subheader("Key Financial Ratios")
-            latest_ratios = ratios[0]
-            st.write(f"**P/E Ratio:** {round(latest_ratios['priceEarningsRatio'], 2)}")
-            st.write(f"**P/B Ratio:** {round(latest_ratios['priceToBookRatio'], 2)}")
-            st.write(f"**Debt-to-Equity Ratio:** {round(latest_ratios['debtEquityRatio'], 2)}")
-            st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
-            st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
+
+        if dcf or ratios:
+            st.subheader("Valuation and Key Ratios")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if dcf:
+                    st.write("### Discounted Cash Flow (DCF) Valuation")
+                    st.write(f"**DCF Value:** ${dcf[0]['dcf']}")
+                    st.write(f"**Stock Price:** ${dcf[0]['Stock Price']}")
+                    valuation = "undervalued" if dcf[0]['dcf'] > dcf[0]['Stock Price'] else "overvalued"
+                    st.write(f"The stock appears to be **{valuation}** based on DCF analysis.")
+
+            with col2:
+                if ratios:
+                    st.write("### Key Financial Ratios")
+                    latest_ratios = ratios[0]
+                    st.write(f"**P/E Ratio:** {round(latest_ratios['priceEarningsRatio'], 2)}")
+                    st.write(f"**P/B Ratio:** {round(latest_ratios['priceToBookRatio'], 2)}")
+                    st.write(f"**Debt-to-Equity Ratio:** {round(latest_ratios['debtEquityRatio'], 2)}")
+                    st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
+                    st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
 if __name__ == "__main__":
     main()
-
