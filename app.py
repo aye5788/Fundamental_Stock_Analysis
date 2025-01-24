@@ -1,5 +1,11 @@
 import streamlit as st
-from utils import fetch_fmp_data, fetch_stock_data, plot_candlestick_chart
+from utils import (
+    fetch_fmp_data,
+    fetch_stock_data,
+    plot_candlestick_chart,
+    fetch_sector_pe,
+    fetch_industry_pe,
+)
 
 # Streamlit app
 def main():
@@ -11,12 +17,9 @@ def main():
     if ticker:
         api_key = "j6kCIBjZa1pHewFjf7XaRDlslDxEFuof"  # Replace with your actual FMP API key
 
-        # Fetch company profile
-        profile = fetch_fmp_data("profile", ticker, api_key)
-        stock_data = None
-
         # Allow user to select timeframe
         timeframe = st.selectbox("Select Timeframe", ["Last 7 Days", "Last 30 Days", "Last 90 Days"])
+        stock_data = None
         if timeframe == "Last 7 Days":
             stock_data = fetch_stock_data(ticker, api_key, days=7)
         elif timeframe == "Last 30 Days":
@@ -24,15 +27,17 @@ def main():
         elif timeframe == "Last 90 Days":
             stock_data = fetch_stock_data(ticker, api_key, days=90)
 
+        # Display candlestick chart at full width
+        if stock_data:
+            st.plotly_chart(plot_candlestick_chart(stock_data, timeframe), use_container_width=True)
+
+        # Fetch company profile
+        profile = fetch_fmp_data("profile", ticker, api_key)
+
         if profile:
             col1, col2 = st.columns([1, 2])
 
             with col1:
-                # Display candlestick chart
-                if stock_data:
-                    st.plotly_chart(plot_candlestick_chart(stock_data, timeframe))
-
-            with col2:
                 # Display company description
                 st.subheader(f"{profile[0]['companyName']} ({ticker})")
                 st.write(f"**Industry:** {profile[0]['industry']}")
@@ -42,6 +47,8 @@ def main():
         # Fetch DCF valuation and financial ratios
         dcf = fetch_fmp_data("discounted-cash-flow", ticker, api_key)
         ratios = fetch_fmp_data("ratios", ticker, api_key)
+        sector_pe = fetch_sector_pe(api_key)
+        industry_pe = fetch_industry_pe(profile[0]['industry'], api_key)
 
         if dcf or ratios:
             st.subheader("Valuation and Key Ratios")
@@ -64,6 +71,25 @@ def main():
                     st.write(f"**Debt-to-Equity Ratio:** {round(latest_ratios['debtEquityRatio'], 2)}")
                     st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
+
+            if sector_pe or industry_pe:
+                st.subheader("Relative Valuation")
+                st.write(f"**Sector P/E Ratio:** {sector_pe}")
+                st.write(f"**Industry P/E Ratio:** {industry_pe}")
+                stock_pe = latest_ratios['priceEarningsRatio']
+                st.write(
+                    f"The stock's P/E ratio ({round(stock_pe, 2)}) is compared to the sector and industry:"
+                )
+                if stock_pe < sector_pe:
+                    st.write("- **Below sector average**")
+                else:
+                    st.write("- **Above sector average**")
+
+                if stock_pe < industry_pe:
+                    st.write("- **Below industry average**")
+                else:
+                    st.write("- **Above industry average**")
+
 
 if __name__ == "__main__":
     main()
