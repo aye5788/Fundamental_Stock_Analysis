@@ -6,8 +6,9 @@ from utils import (
     fetch_sector_pe,
     fetch_industry_pe,
 )
+from datetime import date
 
-# Streamlit app
+
 def main():
     st.title("Fundamental Stock Analysis Dashboard")
 
@@ -15,7 +16,7 @@ def main():
     ticker = st.text_input("Enter Stock Ticker (e.g., AAPL):").upper()
 
     if ticker:
-        api_key = "j6kCIBjZa1pHewFjf7XaRDlslDxEFuof"  # Replace with your actual FMP API key
+        api_key = "YOUR_FMP_API_KEY"  # Replace with your actual FMP API key
 
         # Allow user to select timeframe
         timeframe = st.selectbox("Select Timeframe", ["Last 7 Days", "Last 30 Days", "Last 90 Days"])
@@ -31,7 +32,7 @@ def main():
         profile = fetch_fmp_data("profile", ticker, api_key)
 
         # Side-by-side layout for chart and description
-        col1, col2 = st.columns([2, 1])  # Adjust the ratio for better alignment
+        col1, col2 = st.columns([2, 1])
 
         with col1:
             # Display candlestick chart
@@ -49,8 +50,12 @@ def main():
         # Fetch DCF valuation and financial ratios
         dcf = fetch_fmp_data("discounted-cash-flow", ticker, api_key)
         ratios = fetch_fmp_data("ratios", ticker, api_key)
-        sector_pe = fetch_sector_pe(api_key)
-        industry_pe = fetch_industry_pe(profile[0]['industry'], api_key)
+
+        # Fetch sector and industry P/E ratios
+        today = date.today().strftime("%Y-%m-%d")
+        exchange = "NYSE"  # Default exchange
+        sector_pe_data = fetch_sector_pe(today, exchange, api_key)
+        industry_pe_data = fetch_industry_pe(today, exchange, api_key)
 
         if dcf or ratios:
             st.subheader("Valuation and Key Ratios")
@@ -74,23 +79,21 @@ def main():
                     st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
                     st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
-            if sector_pe or industry_pe:
-                st.subheader("Relative Valuation")
-                st.write(f"**Sector P/E Ratio:** {sector_pe}")
-                st.write(f"**Industry P/E Ratio:** {industry_pe}")
-                stock_pe = latest_ratios['priceEarningsRatio']
-                st.write(
-                    f"The stock's P/E ratio ({round(stock_pe, 2)}) is compared to the sector and industry:"
-                )
-                if stock_pe < sector_pe:
-                    st.write("- **Below sector average**")
-                else:
-                    st.write("- **Above sector average**")
+        # Display sector P/E ratios
+        if sector_pe_data:
+            st.subheader("Sector P/E Ratios")
+            for sector in sector_pe_data:
+                st.write(f"**Sector:** {sector['sector']}, **P/E Ratio:** {sector['pe']}")
 
-                if stock_pe < industry_pe:
-                    st.write("- **Below industry average**")
-                else:
-                    st.write("- **Above industry average**")
+        # Display industry P/E ratio
+        if industry_pe_data and profile:
+            industry_name = profile[0].get('industry', 'N/A')
+            industry_pe_ratio = next((item['pe'] for item in industry_pe_data if item['industry'] == industry_name), None)
+            st.subheader("Industry P/E Ratio")
+            if industry_pe_ratio:
+                st.write(f"**Industry:** {industry_name}, **P/E Ratio:** {industry_pe_ratio}")
+            else:
+                st.write("No P/E ratio data available for the industry.")
 
 
 if __name__ == "__main__":
