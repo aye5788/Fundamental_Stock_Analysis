@@ -1,15 +1,5 @@
 import streamlit as st
-import requests
-
-# Function to fetch data from FMP API
-def fetch_fmp_data(endpoint, symbol, api_key):
-    url = f"https://financialmodelingprep.com/api/v3/{endpoint}/{symbol}?apikey={api_key}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error("Error fetching data from FMP API.")
-        return None
+from utils import fetch_fmp_data, fetch_stock_data, plot_stock_chart
 
 # Streamlit app
 def main():
@@ -23,11 +13,22 @@ def main():
 
         # Fetch company profile
         profile = fetch_fmp_data("profile", ticker, api_key)
+        stock_data = fetch_stock_data(ticker, api_key)
+
         if profile:
-            st.header(f"{profile[0]['companyName']} ({ticker})")
-            st.write(f"**Industry:** {profile[0]['industry']}")
-            st.write(f"**Sector:** {profile[0]['sector']}")
-            st.write(f"**Description:** {profile[0]['description']}")
+            col1, col2 = st.columns([1, 2])
+
+            with col1:
+                # Display stock chart
+                if stock_data:
+                    st.plotly_chart(plot_stock_chart(stock_data))
+
+            with col2:
+                # Display company description
+                st.subheader(f"{profile[0]['companyName']} ({ticker})")
+                st.write(f"**Industry:** {profile[0]['industry']}")
+                st.write(f"**Sector:** {profile[0]['sector']}")
+                st.write(profile[0]['description'][:500] + "...")  # Limit description length
 
         # Fetch DCF valuation
         dcf = fetch_fmp_data("discounted-cash-flow", ticker, api_key)
@@ -43,11 +44,12 @@ def main():
         if ratios:
             st.subheader("Key Financial Ratios")
             latest_ratios = ratios[0]
-            st.write(f"**P/E Ratio:** {latest_ratios['priceEarningsRatio']}")
-            st.write(f"**P/B Ratio:** {latest_ratios['priceToBookRatio']}")
-            st.write(f"**Debt-to-Equity Ratio:** {latest_ratios['debtEquityRatio']}")
-            st.write(f"**Return on Equity (ROE):** {latest_ratios['returnOnEquity']}%")
-            st.write(f"**Dividend Yield:** {latest_ratios['dividendYield']}%")
+            st.write(f"**P/E Ratio:** {round(latest_ratios['priceEarningsRatio'], 2)}")
+            st.write(f"**P/B Ratio:** {round(latest_ratios['priceToBookRatio'], 2)}")
+            st.write(f"**Debt-to-Equity Ratio:** {round(latest_ratios['debtEquityRatio'], 2)}")
+            st.write(f"**Return on Equity (ROE):** {round(latest_ratios['returnOnEquity'], 2)}%")
+            st.write(f"**Dividend Yield:** {round(latest_ratios['dividendYield'], 2)}%")
 
 if __name__ == "__main__":
     main()
+
